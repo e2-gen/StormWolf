@@ -7,7 +7,20 @@ on:
     branches: [ main ]
 
 jobs:
+  setup:
+    runs-on: ubuntu-24.04
+    outputs:
+      flutter-version: ${{ steps.set-version.outputs.flutter-version }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract Flutter version
+        id: set-version
+        run: |
+          FLUTTER_VERSION=$(grep 'flutter:' pubspec.yaml -A 1 | tail -1 | awk '{print $2}' | tr -d '"')
+          echo "flutter-version=${FLUTTER_VERSION:-3.16.9}" >> $GITHUB_OUTPUT
+
   android-apk:
+    needs: setup
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -15,9 +28,12 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.0' # تحديد نسخة ثابتة لتجنب المشاكل
+          flutter-version: ${{ needs.setup.outputs.flutter-version }}
           channel: stable
           
+      - name: Disable analytics
+        run: flutter config --no-analytics
+      
       - name: Install dependencies
         run: flutter pub get
       
@@ -31,6 +47,7 @@ jobs:
           path: build/app/outputs/flutter-apk/app-release.apk
 
   android-appbundle:
+    needs: setup
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -38,9 +55,12 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.0'
+          flutter-version: ${{ needs.setup.outputs.flutter-version }}
           channel: stable
           
+      - name: Disable analytics
+        run: flutter config --no-analytics
+      
       - name: Install dependencies
         run: flutter pub get
       
@@ -54,6 +74,7 @@ jobs:
           path: build/app/outputs/bundle/release/app-release.aab
 
   linux-build:
+    needs: setup
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -73,9 +94,12 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.0'
+          flutter-version: ${{ needs.setup.outputs.flutter-version }}
           channel: stable
           
+      - name: Disable analytics
+        run: flutter config --no-analytics
+      
       - name: Install packages
         run: flutter pub get
       
@@ -84,26 +108,30 @@ jobs:
       
       - name: Create artifact
         run: |
-          mkdir -p artifacts
-          cp -r build/linux/release/bundle/* artifacts/
+          mkdir -p artifacts/linux
+          cp -r build/linux/release/bundle/* artifacts/linux/
       
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: linux-app
-          path: artifacts/
+          path: artifacts/linux/
 
   windows-build:
-    runs-on: windows-2022 # استخدام نسخة محددة بدلاً من latest
+    needs: setup
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
       
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.0'
+          flutter-version: ${{ needs.setup.outputs.flutter-version }}
           channel: stable
           
+      - name: Disable analytics
+        run: flutter config --no-analytics
+      
       - name: Install dependencies
         run: flutter pub get
       
@@ -112,16 +140,17 @@ jobs:
       
       - name: Create artifact
         run: |
-          mkdir artifacts
-          Copy-Item -Path "build\windows\runner\Release\*" -Destination "artifacts\" -Recurse
+          New-Item -ItemType Directory -Path artifacts/windows -Force
+          Copy-Item -Path "build\windows\runner\Release\*" -Destination "artifacts\windows\" -Recurse
       
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-app
-          path: artifacts/
+          path: artifacts/windows/
 
   web-build:
+    needs: setup
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -129,9 +158,12 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.0'
+          flutter-version: ${{ needs.setup.outputs.flutter-version }}
           channel: stable
           
+      - name: Disable analytics
+        run: flutter config --no-analytics
+      
       - name: Install dependencies
         run: flutter pub get
       
@@ -140,26 +172,30 @@ jobs:
       
       - name: Create artifact
         run: |
-          mkdir -p artifacts
-          cp -r build/web/* artifacts/
+          mkdir -p artifacts/web
+          cp -r build/web/* artifacts/web/
       
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: web-app
-          path: artifacts/
+          path: artifacts/web/
 
   ios-build:
-    runs-on: macos-14 # استخدام نسخة محددة بدلاً من latest
+    needs: setup
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
       
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.0'
+          flutter-version: ${{ needs.setup.outputs.flutter-version }}
           channel: stable
           
+      - name: Disable analytics
+        run: flutter config --no-analytics
+      
       - name: Install dependencies
         run: flutter pub get
       
@@ -168,11 +204,11 @@ jobs:
       
       - name: Create artifact
         run: |
-          mkdir -p artifacts
-          cp -r build/ios/Release-iphoneos/* artifacts/
+          mkdir -p artifacts/ios
+          cp -r build/ios/Release-iphoneos/* artifacts/ios/
       
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ios-app
-          path: artifacts/
+          path: artifacts/ios/
