@@ -8,13 +8,14 @@ on:
 
 jobs:
   android-apk:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.22.0' # تحديد نسخة ثابتة لتجنب المشاكل
           channel: stable
           
       - name: Install dependencies
@@ -23,40 +24,41 @@ jobs:
       - name: Build Android APK
         run: flutter build apk --release
       
-      - name: Upload APK artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
           path: build/app/outputs/flutter-apk/app-release.apk
 
   android-appbundle:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.22.0'
           channel: stable
           
       - name: Install dependencies
         run: flutter pub get
       
-      - name: Build Android AppBundle
+      - name: Build AppBundle
         run: flutter build appbundle --release
       
-      - name: Upload AppBundle artifact
+      - name: Upload AppBundle
         uses: actions/upload-artifact@v4
         with:
           name: android-appbundle
           path: build/app/outputs/bundle/release/app-release.aab
 
   linux-build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       
-      - name: Install Linux dependencies
+      - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -71,31 +73,35 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.22.0'
           channel: stable
           
-      - name: Install dependencies
+      - name: Install packages
         run: flutter pub get
       
       - name: Build Linux
         run: flutter build linux --release
       
-      - name: Zip Linux build
-        run: zip -r linux_build.zip build/linux/release/bundle/
+      - name: Create artifact
+        run: |
+          mkdir -p artifacts
+          cp -r build/linux/release/bundle/* artifacts/
       
-      - name: Upload Linux artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: linux-app
-          path: linux_build.zip
+          path: artifacts/
 
   windows-build:
-    runs-on: windows-latest
+    runs-on: windows-2022 # استخدام نسخة محددة بدلاً من latest
     steps:
       - uses: actions/checkout@v4
       
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.22.0'
           channel: stable
           
       - name: Install dependencies
@@ -104,23 +110,26 @@ jobs:
       - name: Build Windows
         run: flutter build windows --release
       
-      - name: Zip Windows build
-        run: Compress-Archive -Path build/windows/runner/Release -DestinationPath windows_build.zip
+      - name: Create artifact
+        run: |
+          mkdir artifacts
+          Copy-Item -Path "build\windows\runner\Release\*" -Destination "artifacts\" -Recurse
       
-      - name: Upload Windows artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-app
-          path: windows_build.zip
+          path: artifacts/
 
   web-build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.22.0'
           channel: stable
           
       - name: Install dependencies
@@ -129,23 +138,26 @@ jobs:
       - name: Build Web
         run: flutter build web --release
       
-      - name: Zip Web build
-        run: zip -r web_build.zip build/web/
+      - name: Create artifact
+        run: |
+          mkdir -p artifacts
+          cp -r build/web/* artifacts/
       
-      - name: Upload Web artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: web-app
-          path: web_build.zip
+          path: artifacts/
 
   ios-build:
-    runs-on: macos-latest
+    runs-on: macos-14 # استخدام نسخة محددة بدلاً من latest
     steps:
       - uses: actions/checkout@v4
       
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.22.0'
           channel: stable
           
       - name: Install dependencies
@@ -154,8 +166,13 @@ jobs:
       - name: Build iOS
         run: flutter build ios --release --no-codesign
       
-      - name: Upload iOS artifact
+      - name: Create artifact
+        run: |
+          mkdir -p artifacts
+          cp -r build/ios/Release-iphoneos/* artifacts/
+      
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ios-app
-          path: build/ios/Release-iphoneos/
+          path: artifacts/
