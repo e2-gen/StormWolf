@@ -1,0 +1,108 @@
+name: Flutter Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v1
+        with:
+          channel: stable
+          
+      - name: Install dependencies
+        run: flutter pub get
+      
+      - name: Verify Flutter installation
+        run: flutter doctor
+      
+      # بناء APK لأندرويد
+      - name: Build Android APK
+        run: flutter build apk --release
+      
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+      
+      # بناء AppBundle لأندرويد
+      - name: Build Android AppBundle
+        run: flutter build appbundle --release
+      
+      - name: Upload AppBundle artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: release-appbundle
+          path: build/app/outputs/bundle/release/app-release.aab
+      
+      # بناء تطبيق ويندوز
+      - name: Build Windows EXE
+        run: flutter build windows --release
+      
+      - name: Zip Windows build
+        run: zip -r windows_build.zip build/windows/runner/Release/
+      
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: release-windows
+          path: windows_build.zip
+      
+      # بناء تطبيق لينكس
+      - name: Build Linux
+        run: flutter build linux --release
+      
+      - name: Zip Linux build
+        run: zip -r linux_build.zip build/linux/release/bundle/
+      
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: release-linux
+          path: linux_build.zip
+      
+      # بناء تطبيق ويب
+      - name: Build Web
+        run: flutter build web --release
+      
+      - name: Zip Web build
+        run: zip -r web_build.zip build/web/
+      
+      - name: Upload Web artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: release-web
+          path: web_build.zip
+
+  build-ios:
+    needs: build
+    runs-on: macos-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v1
+        with:
+          channel: stable
+          
+      - name: Install dependencies
+        run: flutter pub get
+      
+      - name: Build iOS
+        run: flutter build ios --release --no-codesign
+      
+      - name: Upload iOS artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: release-ios
+          path: build/ios/Release-iphoneos/
