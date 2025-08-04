@@ -1,3 +1,4 @@
+
 name: Flutter Build
 
 on:
@@ -9,7 +10,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
       
@@ -24,7 +24,7 @@ jobs:
       - name: Verify Flutter installation
         run: flutter doctor
       
-      # بناء APK لأندرويد
+      # Android builds
       - name: Build Android APK
         run: flutter build apk --release
       
@@ -34,7 +34,6 @@ jobs:
           name: release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
       
-      # بناء AppBundle لأندرويد
       - name: Build Android AppBundle
         run: flutter build appbundle --release
       
@@ -44,20 +43,7 @@ jobs:
           name: release-appbundle
           path: build/app/outputs/bundle/release/app-release.aab
       
-      # بناء تطبيق ويندوز
-      - name: Build Windows EXE
-        run: flutter build windows --release
-      
-      - name: Zip Windows build
-        run: zip -r windows_build.zip build/windows/runner/Release/
-      
-      - name: Upload Windows artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-windows
-          path: windows_build.zip
-      
-      # بناء تطبيق لينكس
+      # Linux build
       - name: Build Linux
         run: flutter build linux --release
       
@@ -70,7 +56,7 @@ jobs:
           name: release-linux
           path: linux_build.zip
       
-      # بناء تطبيق ويب
+      # Web build
       - name: Build Web
         run: flutter build web --release
       
@@ -83,10 +69,35 @@ jobs:
           name: release-web
           path: web_build.zip
 
+  build-windows:
+    needs: build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          
+      - name: Install dependencies
+        run: flutter pub get
+      
+      - name: Build Windows
+        run: flutter build windows --release
+      
+      - name: Zip Windows build
+        run: Compress-Archive -Path build/windows/runner/Release -DestinationPath windows_build.zip
+      
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-windows
+          path: windows_build.zip
+
   build-ios:
     needs: build
     runs-on: macos-latest
-    
     steps:
       - uses: actions/checkout@v4
       
