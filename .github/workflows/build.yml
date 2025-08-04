@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       
       - name: Set up Flutter
-        uses: subosito/flutter-action@v1
+        uses: subosito/flutter-action@v2
         with:
           channel: stable
           
@@ -29,7 +29,7 @@ jobs:
         run: flutter build apk --release
       
       - name: Upload APK artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
@@ -39,7 +39,7 @@ jobs:
         run: flutter build appbundle --release
       
       - name: Upload AppBundle artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: release-appbundle
           path: build/app/outputs/bundle/release/app-release.aab
@@ -52,7 +52,7 @@ jobs:
         run: zip -r windows_build.zip build/windows/runner/Release/
       
       - name: Upload Windows artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: release-windows
           path: windows_build.zip
@@ -65,7 +65,7 @@ jobs:
         run: zip -r linux_build.zip build/linux/release/bundle/
       
       - name: Upload Linux artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: release-linux
           path: linux_build.zip
@@ -78,7 +78,7 @@ jobs:
         run: zip -r web_build.zip build/web/
       
       - name: Upload Web artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: release-web
           path: web_build.zip
@@ -88,10 +88,10 @@ jobs:
     runs-on: macos-latest
     
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       
       - name: Set up Flutter
-        uses: subosito/flutter-action@v1
+        uses: subosito/flutter-action@v2
         with:
           channel: stable
           
@@ -102,7 +102,7 @@ jobs:
         run: flutter build ios --release --no-codesign
       
       - name: Upload iOS artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: release-ios
           path: build/ios/Release-iphoneos/
