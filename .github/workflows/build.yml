@@ -13,15 +13,28 @@ jobs:
       flutter-version: ${{ steps.set-version.outputs.flutter-version }}
     steps:
       - uses: actions/checkout@v4
-      - name: Extract Flutter version
+      - name: Set required Flutter version
         id: set-version
         run: |
-          FLUTTER_VERSION=$(grep 'flutter:' pubspec.yaml -A 1 | tail -1 | awk '{print $2}' | tr -d '"')
-          echo "flutter-version=${FLUTTER_VERSION:-3.16.9}" >> $GITHUB_OUTPUT
+          echo "flutter-version=3.32.8" >> $GITHUB_OUTPUT
+          echo "Selected Flutter version 3.32.8 which includes Dart SDK 3.18.1"
 
-  android-apk:
+  build:
     needs: setup
-    runs-on: ubuntu-24.04
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, windows-2022, macos-14]
+        include:
+          - os: ubuntu-24.04
+            platform: linux
+            artifact-name: linux-app
+          - os: windows-2022
+            platform: windows
+            artifact-name: windows-app
+          - os: macos-14
+            platform: ios
+            artifact-name: ios-app
     steps:
       - uses: actions/checkout@v4
       
@@ -34,52 +47,8 @@ jobs:
       - name: Disable analytics
         run: flutter config --no-analytics
       
-      - name: Install dependencies
-        run: flutter pub get
-      
-      - name: Build Android APK
-        run: flutter build apk --release
-      
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
-
-  android-appbundle:
-    needs: setup
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ needs.setup.outputs.flutter-version }}
-          channel: stable
-          
-      - name: Disable analytics
-        run: flutter config --no-analytics
-      
-      - name: Install dependencies
-        run: flutter pub get
-      
-      - name: Build AppBundle
-        run: flutter build appbundle --release
-      
-      - name: Upload AppBundle
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-appbundle
-          path: build/app/outputs/bundle/release/app-release.aab
-
-  linux-build:
-    needs: setup
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Install dependencies
+      - name: Install Linux dependencies (Linux only)
+        if: matrix.os == 'ubuntu-24.04'
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -91,63 +60,37 @@ jobs:
             liblzma-dev \
             libstdc++-12-dev
       
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ needs.setup.outputs.flutter-version }}
-          channel: stable
-          
-      - name: Disable analytics
-        run: flutter config --no-analytics
-      
-      - name: Install packages
-        run: flutter pub get
-      
-      - name: Build Linux
-        run: flutter build linux --release
-      
-      - name: Create artifact
-        run: |
-          mkdir -p artifacts/linux
-          cp -r build/linux/release/bundle/* artifacts/linux/
-      
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-app
-          path: artifacts/linux/
-
-  windows-build:
-    needs: setup
-    runs-on: windows-2022
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ needs.setup.outputs.flutter-version }}
-          channel: stable
-          
-      - name: Disable analytics
-        run: flutter config --no-analytics
-      
       - name: Install dependencies
         run: flutter pub get
       
-      - name: Build Windows
-        run: flutter build windows --release
+      - name: Verify Flutter version
+        run: flutter --version
       
-      - name: Create artifact
+      - name: Build for ${{ matrix.platform }}
         run: |
-          New-Item -ItemType Directory -Path artifacts/windows -Force
-          Copy-Item -Path "build\windows\runner\Release\*" -Destination "artifacts\windows\" -Recurse
+          if [ "${{ matrix.platform }}" == "ios" ]; then
+            flutter build ios --release --no-codesign
+          else
+            flutter build ${{ matrix.platform }} --release
+          fi
+      
+      - name: Prepare artifacts
+        run: |
+          mkdir -p artifacts
+          if [ "${{ matrix.platform }}" == "windows" ]; then
+            cd build/windows/runner/Release
+            zip -r ../../../../artifacts/release.zip ./*
+          elif [ "${{ matrix.platform }}" == "ios" ]; then
+            cp -r build/ios/Release-iphoneos/* artifacts/
+          else
+            cp -r build/${{ matrix.platform }}/release/* artifacts/
+          fi
       
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: windows-app
-          path: artifacts/windows/
+          name: ${{ matrix.artifact-name }}
+          path: artifacts/
 
   web-build:
     needs: setup
@@ -170,45 +113,13 @@ jobs:
       - name: Build Web
         run: flutter build web --release
       
-      - name: Create artifact
+      - name: Prepare web artifacts
         run: |
-          mkdir -p artifacts/web
-          cp -r build/web/* artifacts/web/
+          mkdir -p web-artifacts
+          cp -r build/web/* web-artifacts/
       
-      - name: Upload artifact
+      - name: Upload web artifact
         uses: actions/upload-artifact@v4
         with:
           name: web-app
-          path: artifacts/web/
-
-  ios-build:
-    needs: setup
-    runs-on: macos-14
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ needs.setup.outputs.flutter-version }}
-          channel: stable
-          
-      - name: Disable analytics
-        run: flutter config --no-analytics
-      
-      - name: Install dependencies
-        run: flutter pub get
-      
-      - name: Build iOS
-        run: flutter build ios --release --no-codesign
-      
-      - name: Create artifact
-        run: |
-          mkdir -p artifacts/ios
-          cp -r build/ios/Release-iphoneos/* artifacts/ios/
-      
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-app
-          path: artifacts/ios/
+          path: web-artifacts/
