@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 env:
-  FLUTTER_VERSION: "3.32.8" # يتوافق مع Dart 3.18.1
+  FLUTTER_VERSION: "3.32.8" # Flutter SDK version with Dart 3.18.1
 
 jobs:
   android-apk:
@@ -30,6 +30,9 @@ jobs:
       
       - name: Build APK
         run: flutter build apk --release --split-per-abi
+      
+      - name: Verify APK files
+        run: ls -la build/app/outputs/flutter-apk/
       
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
@@ -55,6 +58,9 @@ jobs:
       - name: Build AppBundle
         run: flutter build appbundle --release
       
+      - name: Verify AppBundle
+        run: ls -la build/app/outputs/bundle/release/
+      
       - name: Upload AppBundle
         uses: actions/upload-artifact@v4
         with:
@@ -79,9 +85,20 @@ jobs:
       - name: Build Windows
         run: flutter build windows --release
       
+      - name: Verify Windows build
+        run: |
+          dir "build\windows\runner\Release" /s
+          if not exist "build\windows\runner\Release\*.exe" exit 1
+      
       - name: Package Windows build
         run: |
-          Compress-Archive -Path "build\windows\runner\Release\*" -DestinationPath "windows_build.zip"
+          $releasePath = "build\windows\runner\Release"
+          if (Test-Path "$releasePath\*.exe") {
+            Compress-Archive -Path "$releasePath\*" -DestinationPath "windows_build.zip"
+          } else {
+            Write-Output "::error::No EXE files found in $releasePath"
+            exit 1
+          }
       
       - name: Upload Windows EXE
         uses: actions/upload-artifact@v4
@@ -119,10 +136,19 @@ jobs:
       - name: Build Linux
         run: flutter build linux --release
       
+      - name: Verify Linux build
+        run: |
+          echo "Build contents:"
+          ls -la build/linux/x64/release/bundle/
+          if [ ! -d "build/linux/x64/release/bundle" ]; then
+            echo "::error::Linux build directory not found"
+            exit 1
+          fi
+      
       - name: Package Linux build
         run: |
           mkdir -p linux_package
-          cp -r build/linux/release/bundle/* linux_package/
+          cp -r build/linux/x64/release/bundle/* linux_package/
           tar -czvf linux_build.tar.gz -C linux_package .
       
       - name: Upload Linux App
@@ -149,9 +175,17 @@ jobs:
       - name: Build Web
         run: flutter build web --release --pwa-strategy=none
       
-      - name: Package Web build
+      - name: Verify Web build
         run: |
-          zip -r web_build.zip build/web/
+          echo "Web build contents:"
+          ls -la build/web/
+          if [ ! -d "build/web" ]; then
+            echo "::error::Web build directory not found"
+            exit 1
+          fi
+      
+      - name: Package Web build
+        run: zip -r web_build.zip build/web/
       
       - name: Upload Web App
         uses: actions/upload-artifact@v4
@@ -172,11 +206,19 @@ jobs:
           channel: stable
           
       - name: Get dependencies
-        run: |
-          flutter pub get
+        run: flutter pub get
       
       - name: Build iOS (no codesign)
         run: flutter build ios --release --no-codesign
+      
+      - name: Verify iOS build
+        run: |
+          echo "iOS build contents:"
+          ls -la build/ios/Release-iphoneos/
+          if [ ! -d "build/ios/Release-iphoneos" ]; then
+            echo "::error::iOS build directory not found"
+            exit 1
+          fi
       
       - name: Package iOS build
         run: |
