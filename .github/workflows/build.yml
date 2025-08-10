@@ -85,19 +85,40 @@ jobs:
       - name: Build Windows
         run: flutter build windows --release
       
-      - name: Verify Windows build
+      - name: Verify Windows build (PowerShell)
+        shell: pwsh
         run: |
-          dir "build\windows\runner\Release" /s
-          if not exist "build\windows\runner\Release\*.exe" exit 1
+          $releaseDir = "build\windows\runner\Release"
+          if (-not (Test-Path -Path $releaseDir)) {
+              Write-Output "::error::Release directory not found at $releaseDir"
+              exit 1
+          }
+          
+          $exeFiles = Get-ChildItem -Path $releaseDir -Filter *.exe
+          if ($exeFiles.Count -eq 0) {
+              Write-Output "::error::No EXE files found in $releaseDir"
+              exit 1
+          }
+          
+          Write-Output "Found EXE files:"
+          $exeFiles | ForEach-Object { Write-Output $_.FullName }
       
-      - name: Package Windows build
+      - name: Package Windows build (PowerShell)
+        shell: pwsh
         run: |
-          $releasePath = "build\windows\runner\Release"
-          if (Test-Path "$releasePath\*.exe") {
-            Compress-Archive -Path "$releasePath\*" -DestinationPath "windows_build.zip"
-          } else {
-            Write-Output "::error::No EXE files found in $releasePath"
-            exit 1
+          $releaseDir = "build\windows\runner\Release"
+          $zipPath = "windows_build.zip"
+          
+          if (Test-Path $zipPath) {
+              Remove-Item $zipPath
+          }
+          
+          try {
+              Compress-Archive -Path "$releaseDir\*" -DestinationPath $zipPath
+              Write-Output "Created archive at $zipPath"
+          } catch {
+              Write-Output "::error::Failed to create archive: $_"
+              exit 1
           }
       
       - name: Upload Windows EXE
