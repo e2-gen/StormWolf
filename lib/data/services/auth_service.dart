@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:your_app/core/utils/shared_prefs.dart';
-import 'package:your_app/data/models/user_model.dart';
-import 'package:your_app/core/constants/app_constants.dart';
+import 'package:stormwolf/core/utils/shared_prefs.dart';
+import 'package:stormwolf/data/models/user_model.dart';
+import 'package:stormwolf/core/constants/app_constants.dart';
 
 class AuthService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
