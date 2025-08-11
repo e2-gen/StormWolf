@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:your_app/core/constants/app_constants.dart';
+import 'package:stormwolf/core/constants/app_constants.dart';
 
 class TextStyles {
   // أنماط النصوص الرئيسية
