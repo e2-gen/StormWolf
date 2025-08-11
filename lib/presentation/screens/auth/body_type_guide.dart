@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:your_app/core/utils/body_type_calculator.dart';
-import 'package:your_app/core/constants/app_constants.dart';
-import 'package:your_app/presentation/theme/app_theme.dart';
+import 'package:stormwolf/core/utils/body_type_calculator.dart';
+import 'package:stormwolf/core/constants/app_constants.dart';
+import 'package:stormwolf/presentation/theme/app_theme.dart';
 
 class BodyTypeGuide extends StatelessWidget {
   final VoidCallback onBack;
