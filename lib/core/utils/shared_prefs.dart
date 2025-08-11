@@ -1,5 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:your_app/data/models/user_model.dart';
+import 'package:stormwolf/data/models/user_model.dart';
 import 'dart:convert';
 
 class SharedPrefs {
