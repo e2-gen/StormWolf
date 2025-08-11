@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:your_app/core/utils/auth_helper.dart';
-import 'package:your_app/core/utils/body_type_calculator.dart';
-import 'package:your_app/data/models/user_model.dart';
-import 'package:your_app/presentation/screens/auth/body_type_guide.dart';
-import 'package:your_app/presentation/widgets/custom_textfield.dart';
+import 'package:stormwolf/core/utils/auth_helper.dart';
+import 'package:stormwolf/core/utils/body_type_calculator.dart';
+import 'package:stormwolf/data/models/user_model.dart';
+import 'package:stormwolf/presentation/screens/auth/body_type_guide.dart';
+import 'package:stormwolf/presentation/widgets/custom_textfield.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
