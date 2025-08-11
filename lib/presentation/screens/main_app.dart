@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:your_app/data/models/user_model.dart';
-import 'package:your_app/presentation/screens/workout_screen.dart';
-import 'package:your_app/presentation/screens/profile_screen.dart';
-import 'package:your_app/presentation/screens/progress_screen.dart';
-import 'package:your_app/presentation/screens/nutrition_screen.dart';
-import 'package:your_app/presentation/theme/app_theme.dart';
-import 'package:your_app/core/utils/auth_helper.dart';
+import 'package:stormwolf/data/models/user_model.dart';
+import 'package:stormwolf/presentation/screens/workout_screen.dart';
+import 'package:stormwolf/presentation/screens/profile_screen.dart';
+import 'package:stormwolf/presentation/screens/progress_screen.dart';
+import 'package:stormwolf/presentation/screens/nutrition_screen.dart';
+import 'package:stormwolf/presentation/theme/app_theme.dart';
+import 'package:stormwolf/core/utils/auth_helper.dart';
 
 class MainApp extends StatefulWidget {
   const MainApp({super.key});
