@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:your_app/core/utils/body_type_calculator.dart';
+import 'package:stormwolf/core/utils/body_type_calculator.dart';
 
 /// نموذج بيانات المستخدم الأساسي
 @immutable
