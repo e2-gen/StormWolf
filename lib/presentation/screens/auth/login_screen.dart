@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:your_app/core/constants/app_constants.dart';
-import 'package:your_app/core/utils/auth_helper.dart';
-import 'package:your_app/presentation/screens/main_app.dart';
-import 'package:your_app/presentation/screens/auth/register_screen.dart';
-import 'package:your_app/presentation/screens/auth/forgot_password_screen.dart';
-import 'package:your_app/presentation/widgets/custom_textfield.dart';
-import 'package:your_app/presentation/theme/app_theme.dart';
+import 'package:stormwolf/core/constants/app_constants.dart';
+import 'package:stormwolf/core/utils/auth_helper.dart';
+import 'package:stormwolf/presentation/screens/main_app.dart';
+import 'package:stormwolfpresentation/screens/auth/register_screen.dart';
+import 'package:stormwolf/presentation/screens/auth/forgot_password_screen.dart';
+import 'package:stormwolf/presentation/widgets/custom_textfield.dart';
+import 'package:stormwolf/presentation/theme/app_theme.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
