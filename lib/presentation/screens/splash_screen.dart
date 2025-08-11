@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:your_app/core/utils/auth_helper.dart';
-import 'package:your_app/presentation/screens/auth/login_screen.dart';
-import 'package:your_app/presentation/screens/main_app.dart';
+import 'package:stormwolf/core/utils/auth_helper.dart';
+import 'package:stormwolf/presentation/screens/auth/login_screen.dart';
+import 'package:stormwolf/presentation/screens/main_app.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
