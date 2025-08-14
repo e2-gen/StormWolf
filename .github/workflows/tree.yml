@@ -8,11 +8,11 @@ on:
 jobs:
   generate-tree:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-      
+
     - name: Generate directory tree
       run: |
         # تثبيت أداة tree إذا لم تكن موجودة
@@ -20,19 +20,63 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y tree
         fi
-        
-        # إنشاء ملف tree.txt مع هيكل المستودع
-        tree -a -I '.git' --dirsfirst -o tree.txt
-        
-        # إضافة محتوى الملفات إلى tree.txt
-        echo -e "\n\n### File Contents ###\n" >> tree.txt
-        
-        # البحث عن جميع الملفات وإضافة محتواها (مع استثناء ملف tree.txt نفسه)
-        find . -type f -not -path './.git/*' -not -path './tree.txt' -exec sh -c '
-          echo -e "\n\n==> {} <==\n" >> tree.txt
-          cat {} >> tree.txt
-        ' \;
-        
+
+        # إنشاء ملف tree.txt
+        > tree.txt
+
+        # === 1. إضافة هيكل مجلد lib فقط (إن وُجد) ===
+        if [ -d "lib" ]; then
+          echo "📁 Structure of lib/" >> tree.txt
+          echo "----------------------------------------" >> tree.txt
+          tree -a -I '.git' --dirsfirst lib/ >> tree.txt
+          echo -e "\n\n" >> tree.txt
+        else
+          echo "⚠️  مجلد lib غير موجود." >> tree.txt
+        fi
+
+        # === 2. إضافة الملفات الأساسية من الجذر ===
+        echo "📄 Essential Files in Root" >> tree.txt
+        echo "----------------------------------------" >> tree.txt
+        for file in pubspec.yaml README.md .gitignore analysis_options.yaml CHANGELOG.md main.dart; do
+          if [ -f "$file" ]; then
+            echo "📄 $file" >> tree.txt
+          fi
+        done
+        echo -e "\n\n" >> tree.txt
+
+        # === 3. إضافة محتوى ملفات lib أولاً ===
+        echo "### Contents of lib/ Files ###" >> tree.txt
+        echo "========================================" >> tree.txt
+
+        if [ -d "lib" ]; then
+          find lib -type f -name "*.dart" -o -name "*.yaml" | sort | while read filepath; do
+            echo -e "\n\n==> $filepath <==\n" >> tree.txt
+            cat "$filepath" >> tree.txt
+          done
+        else
+          echo "lib/ directory not found." >> tree.txt
+        fi
+
+        # === 4. إضافة محتوى الملفات الأساسية من الجذر ===
+        echo -e "\n\n### Contents of Root Configuration Files ###" >> tree.txt
+        echo "========================================" >> tree.txt
+
+        for file in pubspec.yaml README.md .gitignore analysis_options.yaml CHANGELOG.md; do
+          if [ -f "$file" ]; then
+            echo -e "\n\n==> $file <==\n" >> tree.txt
+            cat "$file" >> tree.txt
+          fi
+        done
+
+        # === 5. إضافة main.dart إذا كان موجودًا في lib أو جذر المشروع ===
+        if [ -f "lib/main.dart" ]; then
+          echo -e "\n\n==> lib/main.dart <==\n" >> tree.txt
+          cat "lib/main.dart" >> tree.txt
+        elif [ -f "main.dart" ]; then
+          echo -e "\n\n==> main.dart <==\n" >> tree.txt
+          cat "main.dart" >> tree.txt
+        fi
+
     - name: Upload tree.txt as artifact
       uses: actions/upload-artifact@v4
       with:
