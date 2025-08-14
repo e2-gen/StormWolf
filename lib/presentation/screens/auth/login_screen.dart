@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:stormwolf/core/constants/app_constants.dart';
 import 'package:stormwolf/core/utils/auth_helper.dart';
 import 'package:stormwolf/presentation/screens/main_app.dart';
-import 'package:stormwolfpresentation/screens/auth/register_screen.dart';
+import 'package:stormwolf/presentation/screens/auth/register_screen.dart';
 import 'package:stormwolf/presentation/screens/auth/forgot_password_screen.dart';
 import 'package:stormwolf/presentation/widgets/custom_textfield.dart';
 import 'package:stormwolf/presentation/theme/app_theme.dart';
